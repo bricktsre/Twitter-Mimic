@@ -111,7 +111,7 @@ class TweetDataset(Dataset):
     with open(txt_path, 'rb') as fp:
       raw_text = fp.read().strip().decode(encoding='utf-8')
 
-    self.vocab = sorted(set(raw_text))
+    self.vocab = self._build_vocabulary(raw_text)
     self.char2index = {x: i for (i, x) in enumerate(self.vocab)}
     self.index2char = {i: x for (i, x) in enumerate(self.vocab)}
 
@@ -124,9 +124,15 @@ class TweetDataset(Dataset):
 
   def __getitem__(self, index):
     history, label = self.data[index]
-    history = np.array([self.char2index[x] for x in history])
+    token_ids = np.array([self.char2index[x] for x in history])
     label = self.char2index[label]
-    return history, label
+    return token_ids, label
+
+  def _build_vocabulary(self, text):
+    special_tokens = [chr(2), chr(3)]
+
+    vocab = sorted(set(text))
+    return special_tokens + vocab
 
   def get_vocabulary(self):
     return self.vocab
